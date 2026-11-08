@@ -1,3 +1,4 @@
+import 'package:material_3_expressive/material_3_expressive.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:provider/provider.dart';
 
@@ -123,24 +124,20 @@ class _MistakesPageState extends State<MistakesPage> {
             const SizedBox(width: 14),
             Expanded(child: StatTile(label: '待订正读写题', value: '$_todoRw', icon: Icons.edit_note_rounded, color: scheme.tertiary)),
             const SizedBox(width: 14),
-            Expanded(child: StatTile(label: '已订正题目', value: '$_corrected', icon: Icons.task_alt_rounded, color: Colors.green)),
+            Expanded(child: StatTile(label: '已订正题目', value: '$_corrected', icon: Icons.task_alt_rounded, color: Theme.of(context).colorScheme.tertiary)),
           ]),
           const SizedBox(height: 18),
           Panel(
             padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
             child: Row(children: [
-              SegmentedButton<bool>(
+              M3ESegmentedButton<bool>(
                 segments: const [
-                  ButtonSegment(value: false, label: Text('待订正')),
-                  ButtonSegment(value: true, label: Text('已订正')),
+                  M3ESegment(value: false, label: '待订正'),
+                  M3ESegment(value: true, label: '已订正'),
                 ],
                 selected: {_showDone},
                 onSelectionChanged: (v) => setState(() => _showDone = v.first),
                 showSelectedIcon: false,
-                style: ButtonStyle(
-                  shape: WidgetStateProperty.all(const StadiumBorder()),
-                  padding: WidgetStateProperty.all(const EdgeInsets.symmetric(horizontal: 18, vertical: 10)),
-                ),
               ),
               const SizedBox(width: 16),
               DropdownButton<String>(
@@ -210,12 +207,12 @@ class _MistakesPageState extends State<MistakesPage> {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
               decoration: BoxDecoration(
-                color: done ? Colors.green.withValues(alpha: 0.12) : scheme.error.withValues(alpha: 0.1),
+                color: done ? Theme.of(context).colorScheme.tertiaryContainer : scheme.error.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(10),
               ),
               child: Text(done ? '已订正' : '待订正',
                   style: TextStyle(
-                      color: done ? Colors.green : scheme.error, fontWeight: FontWeight.w800, fontSize: 10.5)),
+                      color: done ? Theme.of(context).colorScheme.onTertiaryContainer : scheme.error, fontWeight: FontWeight.w800, fontSize: 10.5)),
             ),
           ]),
           const SizedBox(height: 12),

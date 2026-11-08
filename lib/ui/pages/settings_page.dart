@@ -73,6 +73,9 @@ class _SettingsPageState extends State<SettingsPage> {
                 const SizedBox(height: 6),
                 Text('Android / Material You 基础颜色：选择一套配色，立即应用到全部界面。',
                     style: TextStyle(fontSize: 12, color: scheme.onSurfaceVariant)),
+                const SizedBox(height: 6),
+                Text('当前：${store.paletteName} · ${paletteVariantLabel(store.schemeVariantName)}',
+                    style: TextStyle(fontSize: 12, fontWeight: FontWeight.w800, color: scheme.primary)),
                 const SizedBox(height: 18),
                 PalettePickerPanel(
                   seed: store.seedColor,
@@ -108,17 +111,35 @@ class _SettingsPageState extends State<SettingsPage> {
                     const SizedBox(height: 18),
                     Text('主题模式', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w800, color: scheme.onSurfaceVariant)),
                     const SizedBox(height: 8),
-                    SegmentedButton<ThemeMode>(
+                    M3ESegmentedButton<ThemeMode>(
                       segments: const [
-                        ButtonSegment(value: ThemeMode.light, icon: Icon(Icons.light_mode_rounded), label: Text('浅色')),
-                        ButtonSegment(value: ThemeMode.dark, icon: Icon(Icons.dark_mode_rounded), label: Text('深色')),
-                        ButtonSegment(value: ThemeMode.system, icon: Icon(Icons.brightness_auto_rounded), label: Text('系统')),
+                        M3ESegment(value: ThemeMode.light, label: '浅色', icon: Icon(Icons.light_mode_rounded, size: 18)),
+                        M3ESegment(value: ThemeMode.dark, label: '深色', icon: Icon(Icons.dark_mode_rounded, size: 18)),
+                        M3ESegment(value: ThemeMode.system, label: '系统', icon: Icon(Icons.brightness_auto_rounded, size: 18)),
                       ],
                       selected: {store.themeMode},
                       onSelectionChanged: (v) => store.setTheme(mode: v.first),
                       showSelectedIcon: false,
                     ),
                     const SizedBox(height: 22),
+                    Row(children: [
+                      Icon(Icons.auto_awesome_rounded, size: 20, color: scheme.primary),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                          const Text('动态取色（Monet）', style: TextStyle(fontWeight: FontWeight.w700)),
+                          Text(Platform.isAndroid
+                                  ? 'Android 12+ 从系统壁纸取色'
+                                  : '仅 Android 12+ 可用；当前平台回退到所选壁纸颜色',
+                              style: TextStyle(fontSize: 11.5, color: scheme.onSurfaceVariant)),
+                        ]),
+                      ),
+                      M3ESwitch(
+                        value: Platform.isAndroid ? store.dynamicColor : false,
+                        onChanged: Platform.isAndroid ? (v) => store.setDynamicColor(v) : null,
+                      ),
+                    ]),
+                    const SizedBox(height: 14),
                     Container(
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
@@ -141,7 +162,7 @@ class _SettingsPageState extends State<SettingsPage> {
                             const Text('Liquid Glass 全局开关',
                                 style: TextStyle(fontWeight: FontWeight.w900, fontSize: 14)),
                             const SizedBox(height: 2),
-                            Text('仅对侧栏 / 底部导航等 chrome 生效，内容保持 MD3 实色',
+                            Text('全页所有表面（卡片、导航、顶栏、弹层）切换为液态玻璃',
                                 style: TextStyle(fontSize: 11.5, color: scheme.onSurfaceVariant)),
                           ]),
                         ),
@@ -186,7 +207,7 @@ class _SettingsPageState extends State<SettingsPage> {
                       },
                     ),
                     const SizedBox(height: 6),
-                    Text('玻璃只用于导航 chrome；内容卡片保持实色以保证可读性。',
+                    Text('玻璃会覆盖 Hero、卡片、导航与顶栏；通过 tint + frost 保证文字可读。',
                         style: TextStyle(fontSize: 11, color: scheme.onSurfaceVariant)),
                   ],
                 ),

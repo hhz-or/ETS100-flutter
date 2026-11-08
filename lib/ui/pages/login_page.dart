@@ -4,6 +4,7 @@ import 'package:m3e_buttons/m3e_buttons.dart' as m3eb;
 import 'package:provider/provider.dart';
 
 import '../../core/store.dart';
+import '../theme.dart';
 import '../widgets.dart';
 
 class LoginPage extends StatefulWidget {
@@ -159,12 +160,12 @@ class _LoginPageState extends State<LoginPage> {
               ],
             ),
           ],
-        ).animate().fadeIn(duration: 500.ms).slideX(begin: -0.05, curve: Curves.easeOutCubic),
+        ).animate().fadeIn(duration: 500.ms).slideX(begin: -0.05, curve: EtsTheme.spatialCurve),
         const SizedBox(height: 56),
         Text('让每一次\n开口都有回响。', style: Theme.of(context).textTheme.displayMedium)
             .animate()
             .fadeIn(delay: 120.ms, duration: 600.ms)
-            .slideY(begin: 0.12, curve: Curves.easeOutCubic),
+            .slideY(begin: 0.12, curve: EtsTheme.spatialCurve),
         const SizedBox(height: 22),
         ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 470),
@@ -346,6 +347,6 @@ class _LoginPageState extends State<LoginPage> {
           ],
         ),
       ),
-    ).animate().fadeIn(duration: 550.ms).slideY(begin: 0.06, curve: Curves.easeOutCubic);
+    ).animate().fadeIn(duration: 550.ms).slideY(begin: 0.06, curve: EtsTheme.spatialCurve);
   }
 }

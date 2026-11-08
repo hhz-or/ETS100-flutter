@@ -59,6 +59,8 @@ dependencies:
   liquid_glass_widgets: ^1.17.0
 
   material_ui: any
+  dynamic_color: ^2.1.0
+  motor: ^1.1.0
 dev_dependencies:
   flutter_test:
     sdk: flutter

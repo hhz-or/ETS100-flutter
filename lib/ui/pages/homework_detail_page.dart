@@ -144,7 +144,7 @@ class _HomeworkDetailPageState extends State<HomeworkDetailPage> {
                         Text('${hw['set_name'] ?? '作业'}',
                             maxLines: 2,
                             overflow: TextOverflow.ellipsis,
-                            style: Theme.of(context).textTheme.headlineMedium?.copyWith(color: scheme.onPrimary)),
+                            style: Theme.of(context).textTheme.headlineMedium?.copyWith(color: scheme.onPrimaryContainer)),
                         const SizedBox(height: 10),
                         Wrap(
                           spacing: 8,
@@ -162,11 +162,11 @@ class _HomeworkDetailPageState extends State<HomeworkDetailPage> {
                               icon: const Icon(Icons.play_arrow_rounded),
                               label: const Text('开始练习'),
                               style: FilledButton.styleFrom(
-                                  backgroundColor: scheme.onPrimary, foregroundColor: scheme.primary),
+                                  backgroundColor: scheme.primary, foregroundColor: scheme.onPrimary),
                             ),
                             const SizedBox(width: 12),
                             Text('${_contents.length} 题',
-                                style: TextStyle(color: scheme.onPrimary.withValues(alpha: 0.85), fontWeight: FontWeight.w700)),
+                                style: TextStyle(color: scheme.onPrimaryContainer.withValues(alpha: 0.8), fontWeight: FontWeight.w700)),
                           ],
                         ),
                       ],
@@ -280,10 +280,15 @@ class _HomeworkDetailPageState extends State<HomeworkDetailPage> {
 
   Widget _metric(String value, String label) => Column(
         children: [
-          Text(value, style: Theme.of(context).textTheme.headlineMedium?.copyWith(color: Colors.white)),
+          Text(value,
+              style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                  color: Theme.of(context).colorScheme.onPrimaryContainer)),
           const SizedBox(height: 2),
           Text(label,
-              style: TextStyle(fontSize: 11, color: Colors.white.withValues(alpha: 0.75), fontWeight: FontWeight.w600)),
+              style: TextStyle(
+                  fontSize: 11,
+                  color: Theme.of(context).colorScheme.onPrimaryContainer.withValues(alpha: 0.75),
+                  fontWeight: FontWeight.w600)),
         ],
       );
 

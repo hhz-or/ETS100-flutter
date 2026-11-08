@@ -1,6 +1,8 @@
 import 'package:material_3_expressive/material_3_expressive.dart';
 import 'package:material_ui/material_ui.dart';
 
+import 'glass.dart';
+
 
 /// Android 12+ / Material You 的“基础颜色”预设。
 @immutable
@@ -33,6 +35,8 @@ class MaterialPreset {
 
   static const customName = '自定义';
 }
+
+String paletteVariantLabel(String variant) => _variants[variant] ?? variant;
 
 const _variants = <String, String>{
   'tonalSpot': '经典',
@@ -265,39 +269,132 @@ Future<void> showPalettePickerSheet(
   return showModalBottomSheet<void>(
     context: context,
     isScrollControlled: true,
-    showDragHandle: true,
-    builder: (context) {
-      final content = Padding(
-        padding: EdgeInsets.fromLTRB(24, 6, 24, 24 + MediaQuery.viewInsetsOf(context).bottom),
-        child: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text('壁纸颜色', style: Theme.of(context).textTheme.headlineMedium),
-              const SizedBox(height: 18),
-              PalettePickerPanel(
-                seed: seed,
-                selectedName: selectedName,
-                variant: variant,
-                onPreset: (p) {
-                  onPreset(p);
-                },
-                onVariant: onVariant,
+    useSafeArea: true,
+    showDragHandle: false,
+    backgroundColor: EtsGlass.on ? Colors.transparent : Theme.of(context).colorScheme.surfaceContainerLow,
+    shape: const RoundedRectangleBorder(
+      borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+    ),
+    builder: (context) => _PaletteSheet(
+      initialSeed: seed,
+      initialName: selectedName,
+      initialVariant: variant,
+      onPreset: onPreset,
+      onVariant: onVariant,
+    ),
+  );
+}
+
+class _PaletteSheet extends StatefulWidget {
+  const _PaletteSheet({
+    required this.initialSeed,
+    required this.initialName,
+    required this.initialVariant,
+    required this.onPreset,
+    required this.onVariant,
+  });
+  final Color initialSeed;
+  final String initialName;
+  final String initialVariant;
+  final ValueChanged<MaterialPreset> onPreset;
+  final ValueChanged<String> onVariant;
+  @override
+  State<_PaletteSheet> createState() => _PaletteSheetState();
+}
+
+class _PaletteSheetState extends State<_PaletteSheet> {
+  late Color _seed = widget.initialSeed;
+  late String _name = widget.initialName;
+  late String _variant = widget.initialVariant;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final height = MediaQuery.sizeOf(context).height * 0.88;
+    final content = SizedBox(
+      height: height,
+      child: Column(
+        children: [
+          const SizedBox(height: 10),
+          Container(
+            width: 36,
+            height: 4,
+            decoration: BoxDecoration(
+              color: scheme.onSurfaceVariant.withValues(alpha: 0.4),
+              borderRadius: BorderRadius.circular(2),
+            ),
+          ),
+          Expanded(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.fromLTRB(24, 18, 24, 8),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text('壁纸颜色', style: Theme.of(context).textTheme.headlineMedium),
+                      ),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                        decoration: BoxDecoration(
+                          color: scheme.secondaryContainer,
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: Text(
+                          '$_name · ${paletteVariantLabel(_variant)}',
+                          style: TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w700,
+                            color: scheme.onSecondaryContainer,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    'Material You 基础颜色；选择后立即应用到全部界面。',
+                    style: TextStyle(fontSize: 12, color: scheme.onSurfaceVariant),
+                  ),
+                  const SizedBox(height: 18),
+                  PalettePickerPanel(
+                    seed: _seed,
+                    selectedName: _name,
+                    variant: _variant,
+                    onPreset: (preset) {
+                      setState(() {
+                        _seed = preset.seed;
+                        _name = preset.name;
+                      });
+                      widget.onPreset(preset);
+                    },
+                    onVariant: (variant) {
+                      setState(() => _variant = variant);
+                      widget.onVariant(variant);
+                    },
+                  ),
+                ],
               ),
-              const SizedBox(height: 12),
-              SizedBox(
+            ),
+          ),
+          SafeArea(
+            top: false,
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(24, 8, 24, 16),
+              child: SizedBox(
                 width: double.infinity,
                 child: FilledButton(
                   onPressed: () => Navigator.pop(context),
                   child: const Text('完成'),
                 ),
               ),
-            ],
+            ),
           ),
-        ),
-      );
-      return content;
-    },
-  );
+        ],
+      ),
+    );
+    if (!EtsGlass.on) return content;
+    return EtsGlass.surface(context: context, radius: 28, child: content);
+  }
 }

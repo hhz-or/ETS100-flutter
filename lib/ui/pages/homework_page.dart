@@ -1,3 +1,4 @@
+import 'package:material_3_expressive/material_3_expressive.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:provider/provider.dart';
 
@@ -111,21 +112,17 @@ class _HomeworkPageState extends State<HomeworkPage> {
 
   Widget _chip(String value, String label) {
     final selected = _filter == value;
-    return ChoiceChip(
-      label: Text(label),
+    return M3EChip(
+      label: label,
+      type: M3EChipType.filter,
       selected: selected,
-      showCheckmark: false,
-      onSelected: (_) => setState(() => _filter = value),
-      labelStyle: TextStyle(
-        fontWeight: FontWeight.w700,
-        color: selected ? Theme.of(context).colorScheme.onSecondaryContainer : Theme.of(context).colorScheme.onSurfaceVariant,
-      ),
+      onPressed: () => setState(() => _filter = value),
     );
   }
 
   Widget _card(ColorScheme scheme, Map<String, dynamic> hw) {
     final state = _state(hw);
-    final color = state == 'done' ? Colors.green : state == 'overdue' ? scheme.error : scheme.primary;
+    final color = state == 'done' ? scheme.tertiary : state == 'overdue' ? scheme.error : scheme.primary;
     final struct = hw['struct'] is Map ? (hw['struct'] as Map) : const {};
     final contents = struct['contents'] is List ? (struct['contents'] as List) : const [];
     final name = '${hw['set_name'] ?? struct['set_name'] ?? hw['name'] ?? '作业'}';
@@ -166,7 +163,7 @@ class _HomeworkPageState extends State<HomeworkPage> {
                 const SizedBox(width: 6),
                 Text('${contents.length} 题', style: TextStyle(fontSize: 12, color: scheme.onSurfaceVariant)),
                 const SizedBox(width: 16),
-                Icon(Icons.stars_rounded, size: 16, color: state == 'done' ? Colors.green : scheme.onSurfaceVariant),
+                Icon(Icons.stars_rounded, size: 16, color: state == 'done' ? scheme.tertiary : scheme.onSurfaceVariant),
                 const SizedBox(width: 6),
                 Text('${point.toStringAsFixed(1)} / ${total.toStringAsFixed(0)} 分',
                     style: TextStyle(fontSize: 12, color: scheme.onSurfaceVariant)),

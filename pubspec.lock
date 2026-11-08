@@ -170,7 +170,7 @@ packages:
     source: hosted
     version: "1.1.6"
   dynamic_color:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: dynamic_color
       sha256: "869b3bce0100eb519768ecd71c0111f0b5ea679f5f62e1f59c49d80067e730c5"
@@ -510,7 +510,7 @@ packages:
     source: hosted
     version: "1.19.0"
   motor:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: motor
       sha256: cbd49f21b00e568c2b1a55f134ed803614a107782f4fea7769693bca32940c58

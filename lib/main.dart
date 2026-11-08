@@ -2,6 +2,8 @@
 import 'dart:io';
 
 import 'package:liquid_glass_widgets/liquid_glass_widgets.dart';
+import 'package:dynamic_color/dynamic_color.dart';
+import 'package:flutter/foundation.dart' show defaultTargetPlatform, kIsWeb;
 import 'package:material_ui/material_ui.dart';
 import 'package:provider/provider.dart';
 import 'package:window_manager/legacy.dart';
@@ -57,22 +59,31 @@ class EtsApp extends StatelessWidget {
         builder: (context, store, _) {
           EtsGlass.enabled.value = store.glassEnabled;
           EtsGlass.strength.value = store.glassStrength;
-          return MaterialApp(
+          return DynamicColorBuilder(builder: (lightDynamic, darkDynamic) {
+            final dynamicSupported =
+                !kIsWeb && defaultTargetPlatform == TargetPlatform.android;
+            final dynamicLight = store.dynamicColor && dynamicSupported ? lightDynamic : null;
+            final dynamicDark = store.dynamicColor && dynamicSupported ? darkDynamic : null;
+            return MaterialApp(
             title: 'E听说 · Flutter',
             debugShowCheckedModeBanner: false,
             themeMode: store.themeMode,
-            theme: M3ETheme.build(
-              brightness: Brightness.light,
-              seed: store.seedColor,
-              variantName: store.schemeVariantName,
-              glass: store.glassEnabled,
-            ),
-            darkTheme: M3ETheme.build(
-              brightness: Brightness.dark,
-              seed: store.seedColor,
-              variantName: store.schemeVariantName,
-              glass: store.glassEnabled,
-            ),
+            theme: dynamicLight != null
+                ? EtsTheme.fromScheme(dynamicLight, glass: store.glassEnabled)
+                : EtsTheme.build(
+                    brightness: Brightness.light,
+                    seed: store.seedColor,
+                    variantName: store.schemeVariantName,
+                    glass: store.glassEnabled,
+                  ),
+            darkTheme: dynamicDark != null
+                ? EtsTheme.fromScheme(dynamicDark, glass: store.glassEnabled)
+                : EtsTheme.build(
+                    brightness: Brightness.dark,
+                    seed: store.seedColor,
+                    variantName: store.schemeVariantName,
+                    glass: store.glassEnabled,
+                  ),
             localizationsDelegates: GlobalMaterialLocalizations.delegates,
             supportedLocales: const [Locale('zh', 'CN'), Locale('en', 'US')],
             locale: const Locale('zh', 'CN'),
@@ -80,7 +91,8 @@ class EtsApp extends StatelessWidget {
             home: !store.initialized
                 ? const _SplashScreen()
                 : (store.isLoggedIn ? const ShellPage() : const LoginPage()),
-          );
+            );
+          });
         },
       ),
     );

@@ -584,8 +584,8 @@ class _PracticePageState extends State<PracticePage> {
               children: [
                 _scoreMetric('准确度', scores.accuracy, scheme.primary),
                 _scoreMetric('流利度', scores.fluency, scheme.tertiary),
-                _scoreMetric('完整度', scores.integrity, Colors.orange),
-                _scoreMetric('总分', scores.total, Colors.green),
+                _scoreMetric('完整度', scores.integrity, scheme.tertiary),
+                _scoreMetric('总分', scores.total, scheme.primary),
               ],
             ),
             if (scores.isRejected) ...[
@@ -639,8 +639,8 @@ class _PracticePageState extends State<PracticePage> {
   }
 
   Color _wordColor(ColorScheme scheme, double score) {
-    if (score >= 4) return Colors.green;
-    if (score >= 2.5) return Colors.orange;
+    if (score >= 4) return Theme.of(context).colorScheme.tertiary;
+    if (score >= 2.5) return Theme.of(context).colorScheme.secondary;
     return scheme.error;
   }
 
@@ -684,7 +684,7 @@ class _PracticePageState extends State<PracticePage> {
                 padding: const EdgeInsets.only(bottom: 6),
                 child: Row(children: [
                   Icon(s.ok ? Icons.check_circle_rounded : Icons.error_rounded,
-                      size: 16, color: s.ok ? Colors.green : scheme.error),
+                      size: 16, color: s.ok ? scheme.tertiary : scheme.error),
                   const SizedBox(width: 8),
                   Text(s.name, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700)),
                   const SizedBox(width: 10),

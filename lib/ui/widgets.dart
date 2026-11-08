@@ -3,12 +3,24 @@ import 'dart:math' as math;
 import 'package:material_3_expressive/material_3_expressive.dart';
 import 'package:material_ui/material_ui.dart';
 
+import 'glass.dart';
+
 
 class EtsBackground extends StatelessWidget {
   const EtsBackground({super.key, required this.child});
   final Widget child;
   @override
-  Widget build(BuildContext context) => ColoredBox(color: Theme.of(context).colorScheme.surface, child: child);
+  Widget build(BuildContext context) {
+    if (EtsGlass.on) {
+      return Stack(
+        children: [
+          const Positioned.fill(child: GlassWallpaper()),
+          Positioned.fill(child: child),
+        ],
+      );
+    }
+    return ColoredBox(color: Theme.of(context).colorScheme.surface, child: child);
+  }
 }
 
 /// 标准 M3 “主色容器” Hero 卡：无渐变、无夸张阴影。
@@ -20,16 +32,27 @@ class HeroCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
+    final content = DefaultTextStyle.merge(
+      style: TextStyle(color: scheme.onPrimaryContainer),
+      child: IconTheme.merge(data: IconThemeData(color: scheme.onPrimaryContainer), child: child),
+    );
+    if (EtsGlass.on) {
+      return EtsGlass.surface(
+        context: context,
+        padding: padding,
+        radius: 28,
+        color: scheme.primaryContainer.withValues(alpha: 0.78),
+        border: Border.all(color: scheme.outlineVariant.withValues(alpha: 0.45)),
+        child: content,
+      );
+    }
     return Container(
       padding: padding,
       decoration: BoxDecoration(
         color: scheme.primaryContainer,
         borderRadius: BorderRadius.circular(28),
       ),
-      child: DefaultTextStyle.merge(
-        style: TextStyle(color: scheme.onPrimaryContainer),
-        child: IconTheme.merge(data: IconThemeData(color: scheme.onPrimaryContainer), child: child),
-      ),
+      child: content,
     );
   }
 }
@@ -42,6 +65,16 @@ class Panel extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
+    if (EtsGlass.on) {
+      return EtsGlass.surface(
+        context: context,
+        padding: padding,
+        radius: 24,
+        color: color ?? scheme.surface.withValues(alpha: 0.70),
+        border: Border.all(color: scheme.outlineVariant.withValues(alpha: 0.45)),
+        child: child,
+      );
+    }
     return Container(
       padding: padding,
       decoration: BoxDecoration(
@@ -93,25 +126,23 @@ class StatTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     final c = color ?? scheme.primary;
-    return M3ECard(
-      variant: M3ECardVariant.filled,
+    return Panel(
       padding: const EdgeInsets.all(22),
-      borderRadius: BorderRadius.circular(30),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
-            width: 46,
-            height: 46,
+            width: 44,
+            height: 44,
             decoration: BoxDecoration(
               color: c.withValues(alpha: 0.14),
-              borderRadius: BorderRadius.circular(16),
+              borderRadius: BorderRadius.circular(14),
             ),
-            child: Icon(icon, color: c, size: 23),
+            child: Icon(icon, color: c, size: 22),
           ),
-          const SizedBox(height: 20),
+          const SizedBox(height: 16),
           Text(value, style: Theme.of(context).textTheme.headlineMedium),
-          const SizedBox(height: 4),
+          const SizedBox(height: 2),
           Text(label, style: Theme.of(context).textTheme.bodySmall?.copyWith(color: scheme.onSurfaceVariant)),
         ],
       ),

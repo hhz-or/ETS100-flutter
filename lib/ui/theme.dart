@@ -1,10 +1,20 @@
+import 'package:m3e_core/m3e_core.dart' as m3e;
+import 'package:motor/motor.dart';
 import 'package:material_ui/material_ui.dart';
 
 /// Material 3 / M3E 主题：标准 M3 色板 + 可选的动态方案变体。
 ///
 /// 不再手工合成三色、不再提高对比度；所有颜色均来自 [ColorScheme.fromSeed]
 /// 生成的 M3 token，保证与 Android / Material You 一致。
-class M3ETheme {
+class EtsTheme {
+  /// M3E 的两条核心弹簧曲线：空间（位移/形状）与效果（透明度/颜色）。
+  /// 直接使用 m3e_core 的 expressive spatial / effects spring 转成 Curve，
+  /// 供 Flutter 内置过渡使用。
+  static final Curve spatialCurve =
+      m3e.M3EMotion.expressiveSpatialDefault.toMotion().toCurve;
+  static final Curve effectsCurve =
+      m3e.M3EMotion.expressiveEffectsDefault.toMotion().toCurve;
+
   static DynamicSchemeVariant variantOf(String name) {
     return switch (name) {
       'expressive' => DynamicSchemeVariant.expressive,
@@ -25,16 +35,23 @@ class M3ETheme {
     String variantName = 'tonalSpot',
     bool glass = false,
   }) {
-    final scheme = ColorScheme.fromSeed(
-      seedColor: seed,
-      brightness: brightness,
-      dynamicSchemeVariant: variantOf(variantName),
-      contrastLevel: 0.0,
+    return fromScheme(
+      ColorScheme.fromSeed(
+        seedColor: seed,
+        brightness: brightness,
+        dynamicSchemeVariant: variantOf(variantName),
+        contrastLevel: 0.0,
+      ),
+      glass: glass,
     );
+  }
+
+  /// 用系统动态取色（Monet）或任意 ColorScheme 构建主题。
+  static ThemeData fromScheme(ColorScheme scheme, {bool glass = false}) {
     final base = ThemeData(
       useMaterial3: true,
       colorScheme: scheme,
-      brightness: brightness,
+      brightness: scheme.brightness,
       scaffoldBackgroundColor: scheme.surface,
       visualDensity: VisualDensity.standard,
       fontFamily: 'Manrope',
@@ -154,7 +171,11 @@ class M3ESpringPageTransitionsBuilder extends PageTransitionsBuilder {
   @override
   Widget buildTransitions<T>(PageRoute<T> route, BuildContext context, Animation<double> animation,
       Animation<double> secondaryAnimation, Widget child) {
-    final curved = CurvedAnimation(parent: animation, curve: Curves.easeOutCubic, reverseCurve: Curves.easeInCubic);
+    final curved = CurvedAnimation(
+        parent: animation,
+        curve: EtsTheme.spatialCurve,
+        reverseCurve: EtsTheme.effectsCurve,
+      );
     return FadeTransition(
       opacity: curved,
       child: SlideTransition(

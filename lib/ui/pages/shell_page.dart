@@ -1,11 +1,13 @@
 import 'dart:io';
 
 import 'package:flutter/services.dart';
+import 'package:material_3_expressive/material_3_expressive.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:provider/provider.dart';
 
 import '../../core/store.dart';
 import '../glass.dart';
+import '../theme.dart';
 import '../palette_picker.dart';
 import '../widgets.dart';
 import 'about_page.dart';
@@ -141,7 +143,10 @@ class _ShellPageState extends State<ShellPage> {
       child: Focus(
         autofocus: true,
         child: Scaffold(
-          body: EtsBackground(
+          body: Stack(
+            children: [
+              Positioned.fill(
+                child: EtsBackground(
             child: SafeArea(
               child: LayoutBuilder(builder: (context, constraints) {
                 final mobile = constraints.maxWidth < 940;
@@ -161,8 +166,8 @@ class _ShellPageState extends State<ShellPage> {
                           Expanded(
                             child: AnimatedSwitcher(
                               duration: const Duration(milliseconds: 340),
-                              switchInCurve: Curves.easeOutCubic,
-                              switchOutCurve: Curves.easeInCubic,
+                              switchInCurve: EtsTheme.spatialCurve,
+                              switchOutCurve: EtsTheme.effectsCurve,
                               transitionBuilder: (child, animation) => FadeTransition(
                                 opacity: animation,
                                 child: SlideTransition(
@@ -179,7 +184,10 @@ class _ShellPageState extends State<ShellPage> {
                   ],
                 );
               }),
-            ),
+                ),
+              ),
+              ),
+            ],
           ),
           bottomNavigationBar: MediaQuery.sizeOf(context).width < 940
               ? _BottomNav(
@@ -297,41 +305,50 @@ class _Sidebar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
-    return EtsGlass.surface(
-      context: context,
-      margin: const EdgeInsets.fromLTRB(18, 0, 0, 18),
-      radius: 36,
-      color: EtsGlass.on ? scheme.surface.withValues(alpha: 0.10) : scheme.surfaceContainerLow,
-      border: Border.all(color: scheme.outlineVariant.withValues(alpha: 0.28)),
-      child: SizedBox(
-        width: 264,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 22),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Padding(
-                padding: EdgeInsets.symmetric(horizontal: 8),
-                child: BrandMark(size: 46, showSubtitle: true),
-              ),
-              const SizedBox(height: 26),
-              ...List.generate(_ShellPageState._items.length, (i) {
-                return Padding(
-                  padding: const EdgeInsets.only(bottom: 6),
-                  child: _NavButton(
-                    label: _ShellPageState._items[i].label,
-                    icon: _ShellPageState._items[i].icon,
-                    selected: i == index,
-                    onTap: () => onSelect(i),
-                  ),
-                );
-              }),
-              const Spacer(),
-              _UserCard(store: store),
-            ],
-          ),
-        ),
+    final destinations = _ShellPageState._items
+        .map((e) => M3ENavigationRailDestination(
+              icon: Icon(e.icon),
+              selectedIcon: Icon(e.icon),
+              label: e.label,
+            ))
+        .toList();
+    final rail = M3ENavigationRail(
+      type: M3ENavigationRailType.alwaysExpand,
+      sections: [M3ENavigationRailSection(destinations: destinations)],
+      selectedIndex: index,
+      onDestinationSelected: onSelect,
+      expandedWidth: 264,
+      background: Colors.transparent,
+      labelBehavior: M3ENavigationRailLabelBehavior.alwaysShow,
+      leading: const Padding(
+        padding: EdgeInsets.fromLTRB(18, 22, 18, 10),
+        child: BrandMark(size: 44, showSubtitle: true),
       ),
+      trailing: Padding(
+        padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+        child: _UserCard(store: store),
+      ),
+      scrollable: true,
+    );
+    if (EtsGlass.on) {
+      return EtsGlass.surface(
+        context: context,
+        margin: const EdgeInsets.fromLTRB(16, 0, 0, 16),
+        radius: 32,
+        color: scheme.surface.withValues(alpha: 0.66),
+        border: Border.all(color: scheme.outlineVariant.withValues(alpha: 0.35)),
+        child: SizedBox(width: 264, child: rail),
+      );
+    }
+    return Container(
+      width: 264,
+      margin: const EdgeInsets.fromLTRB(16, 0, 0, 16),
+      decoration: BoxDecoration(
+        color: scheme.surfaceContainerLow,
+        borderRadius: BorderRadius.circular(28),
+        border: Border.all(color: scheme.outlineVariant.withValues(alpha: 0.5)),
+      ),
+      child: rail,
     );
   }
 }
@@ -344,6 +361,7 @@ class _BottomNav extends StatelessWidget {
   Widget build(BuildContext context) {
     final mapped = index >= 4 ? 4 : index;
     final bar = NavigationBar(
+      backgroundColor: EtsGlass.on ? Colors.transparent : null,
       selectedIndex: mapped,
       onDestinationSelected: onSelect,
       destinations: const [
@@ -381,9 +399,7 @@ class _TopBar extends StatelessWidget {
       ThemeMode.dark => Icons.dark_mode_rounded,
       ThemeMode.system => Icons.brightness_auto_rounded,
     };
-    return Padding(
-      padding: EdgeInsets.fromLTRB(compact ? 16 : 24, 8, compact ? 12 : 24, 4),
-      child: Row(
+    final row = Row(
         children: [
           if (compact) const BrandMark(size: 38, showSubtitle: false),
           if (compact) const Spacer(),
@@ -411,7 +427,22 @@ class _TopBar extends StatelessWidget {
             ),
           ),
         ],
-      ),
+    );
+
+    if (EtsGlass.on) {
+      return EtsGlass.surface(
+        context: context,
+        margin: EdgeInsets.fromLTRB(compact ? 10 : 16, 8, compact ? 10 : 16, 4),
+        radius: 24,
+        color: scheme.surface.withValues(alpha: 0.66),
+        border: Border.all(color: scheme.outlineVariant.withValues(alpha: 0.35)),
+        padding: EdgeInsets.symmetric(horizontal: compact ? 8 : 12, vertical: 2),
+        child: row,
+      );
+    }
+    return Padding(
+      padding: EdgeInsets.fromLTRB(compact ? 16 : 24, 8, compact ? 12 : 24, 4),
+      child: row,
     );
   }
 }
@@ -468,7 +499,7 @@ class _NavButtonState extends State<_NavButton> {
         borderRadius: BorderRadius.circular(20),
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 240),
-          curve: Curves.easeOutCubic,
+          curve: EtsTheme.spatialCurve,
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
           decoration: BoxDecoration(
             color: bg,
@@ -528,7 +559,7 @@ class _UserCard extends StatelessWidget {
             style: TextStyle(fontSize: 11, color: scheme.onSurfaceVariant)),
         const SizedBox(height: 6),
         Row(children: [
-          Container(width: 7, height: 7, decoration: BoxDecoration(color: Colors.green, borderRadius: BorderRadius.circular(4))),
+          Container(width: 7, height: 7, decoration: BoxDecoration(color: Theme.of(context).colorScheme.tertiary, borderRadius: BorderRadius.circular(4))),
           const SizedBox(width: 6),
           const Text('已连接', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700)),
           const Spacer(),

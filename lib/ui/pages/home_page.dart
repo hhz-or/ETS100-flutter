@@ -1,8 +1,10 @@
+import 'package:material_3_expressive/material_3_expressive.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:provider/provider.dart';
 
 import '../../core/store.dart';
+import '../theme.dart';
 import '../widgets.dart';
 import 'homework_detail_page.dart';
 import 'homework_page.dart';
@@ -134,7 +136,7 @@ class _HomePageState extends State<HomePage> {
                     spacing: 12,
                     runSpacing: 10,
                     children: [
-                      FilledButton.icon(
+                      M3EButton.filled(
                         onPressed: () {
                           final todo = _homeworks.where((h) => _state(h) == 'todo').toList();
                           if (todo.isEmpty) {
@@ -144,20 +146,11 @@ class _HomePageState extends State<HomePage> {
                                 .push(MaterialPageRoute(builder: (_) => HomeworkPage(initialHomework: todo.first)));
                           }
                         },
-                        icon: const Icon(Icons.arrow_forward_rounded, size: 18),
-                        label: Text(_todoCount > 0 ? '继续练习' : '查看作业'),
-                        style: FilledButton.styleFrom(
-                          backgroundColor: scheme.primary,
-                          foregroundColor: scheme.onPrimary,
-                        ),
+                        child: Text(_todoCount > 0 ? '继续练习' : '查看作业'),
                       ),
-                      OutlinedButton(
+                      M3EButton.outlined(
                         onPressed: () =>
                             Navigator.of(context).push(MaterialPageRoute(builder: (_) => const SetsPage())),
-                        style: OutlinedButton.styleFrom(
-                          foregroundColor: scheme.onPrimaryContainer,
-                          side: BorderSide(color: scheme.outline),
-                        ),
                         child: const Text('套卷练习'),
                       ),
                     ],
@@ -188,7 +181,7 @@ class _HomePageState extends State<HomePage> {
                 ],
               );
             }),
-          ).animate().fadeIn(duration: 450.ms).slideY(begin: 0.04, curve: Curves.easeOutCubic),
+          ).animate().fadeIn(duration: 450.ms).slideY(begin: 0.04, curve: EtsTheme.spatialCurve),
           const SizedBox(height: 24),
           LayoutBuilder(builder: (context, c) {
             final twoCol = c.maxWidth < 780;
@@ -270,11 +263,14 @@ class _HomePageState extends State<HomePage> {
   }
 
   Widget _quickAction(ColorScheme scheme, IconData icon, String title, String subtitle, Color container, Color foreground, VoidCallback onTap) {
+    final dark = Theme.of(context).brightness == Brightness.dark;
+    final panelColor = dark ? scheme.surfaceContainerLow : container;
+    final textColor = dark ? scheme.onSurface : foreground;
     return Panel(
       padding: const EdgeInsets.all(18),
-      color: container,
+      color: panelColor,
       child: DefaultTextStyle.merge(
-        style: TextStyle(color: foreground),
+        style: TextStyle(color: textColor),
         child: InkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(24),
@@ -285,15 +281,15 @@ class _HomePageState extends State<HomePage> {
               width: 46,
               height: 46,
               decoration: BoxDecoration(
-                color: foreground.withValues(alpha: 0.10),
+                color: dark ? container : foreground.withValues(alpha: 0.10),
                 borderRadius: BorderRadius.circular(16),
               ),
               child: Icon(icon, color: foreground, size: 23),
             ),
             const SizedBox(height: 16),
-            Text(title, style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 14.5)),
+            Text(title, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14.5)),
             const SizedBox(height: 3),
-            Text(subtitle, style: TextStyle(fontSize: 11.5, color: foreground.withValues(alpha: 0.75))),
+            Text(subtitle, style: TextStyle(fontSize: 11.5, color: textColor.withValues(alpha: 0.7))),
           ],
         ),
       ),
@@ -303,7 +299,7 @@ class _HomePageState extends State<HomePage> {
 
   Widget _homeworkRow(ColorScheme scheme, Map<String, dynamic> hw) {
     final state = _state(hw);
-    final color = state == 'done' ? Colors.green : state == 'overdue' ? scheme.error : scheme.primary;
+    final color = state == 'done' ? scheme.tertiary : state == 'overdue' ? scheme.error : scheme.primary;
     final struct = hw['struct'] is Map ? (hw['struct'] as Map) : const {};
     final name = '${hw['set_name'] ?? struct['set_name'] ?? hw['name'] ?? '作业'}';
     final count = (struct['contents'] is List) ? (struct['contents'] as List).length : 0;

@@ -33,6 +33,7 @@ class AppStore extends ChangeNotifier {
 
   /// 全局 liquid-glass 开关（持久化；关闭时使用实色 M3E 表面）。
   bool glassEnabled = false;
+  bool dynamicColor = true;
   double glassStrength = 0.6;
 
   String ffmpegPath = 'ffmpeg';
@@ -46,6 +47,7 @@ class AppStore extends ChangeNotifier {
   static const _kThemeMode = 'ets_theme_mode';
   static const _kSeed = 'ets_seed_color';
   static const _kGlass = 'ets_glass_enabled';
+  static const _kDynamicColor = 'ets_dynamic_color';
   static const _kColorPreset = 'ets_color_preset';
   static const _kPaletteSeed = 'ets_palette_seed';
   static const _kSchemeVariant = 'ets_scheme_variant';
@@ -80,9 +82,11 @@ class AppStore extends ChangeNotifier {
   Future<void> initialize() async {
     _prefs = await SharedPreferences.getInstance();
     final p = _prefs!;
-    themeMode = switch (p.getString(_kThemeMode)) {
+    final envTheme = Platform.environment['ETS_THEME'];
+    themeMode = switch (envTheme ?? p.getString(_kThemeMode)) {
       'dark' => ThemeMode.dark,
       'system' => ThemeMode.system,
+      'light' => ThemeMode.light,
       _ => ThemeMode.light,
     };
     expressive = p.getBool(_kExpressive) ?? true;
@@ -93,7 +97,9 @@ class AppStore extends ChangeNotifier {
     if (presetSeed != null) seedColor = Color(presetSeed);
     schemeVariantName = p.getString(_kSchemeVariant) ?? 'tonalSpot';
 
-    glassEnabled = (Platform.environment['ETS_GLASS'] == '1') || (p.getBool(_kGlass) ?? false);
+    final glassEnv = Platform.environment['ETS_GLASS'];
+    glassEnabled = glassEnv == '1' ? true : (glassEnv == '0' ? false : (p.getBool(_kGlass) ?? false));
+    dynamicColor = p.getBool(_kDynamicColor) ?? true;
     ffmpegPath = p.getString(_kFfmpeg) ?? 'ffmpeg';
     deviceName = p.getString(_kDeviceName) ?? 'PC';
     deviceCode = p.getString(_kDeviceCode) ?? '0000000000000000';
@@ -260,6 +266,12 @@ class AppStore extends ChangeNotifier {
   Future<void> setGlass(bool enabled) async {
     glassEnabled = enabled;
     await _prefs?.setBool(_kGlass, enabled);
+    notifyListeners();
+  }
+
+  Future<void> setDynamicColor(bool enabled) async {
+    dynamicColor = enabled;
+    await _prefs?.setBool(_kDynamicColor, enabled);
     notifyListeners();
   }
 
