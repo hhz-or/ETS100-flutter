@@ -74,7 +74,7 @@ class ContentService {
     final contentFile = File('${dir.path}/content.json');
 
     if (await contentFile.exists()) {
-      steps.add(ContentStep('命中本地缓存', true, dir.path));
+      steps.add(ContentStep('命中本地缓存', true, 'content.json'));
       final content = _readContent(contentFile);
       return ContentPackage(content: content, dir: dir, steps: steps, zipPath: zipPath, cached: true);
     }
@@ -87,9 +87,9 @@ class ContentService {
     final bytes = Uint8List.fromList(resp.bodyBytes);
     await File(zipPath).writeAsBytes(bytes);
     final files = await ZipPackage.extractZip(bytes, dir);
-    steps.add(ContentStep('解密并解压', true, '${files.length} 个文件'));
+    steps.add(ContentStep('解密并解压', true, '${files.length} 个文件 · ZipCrypto + DEFLATE'));
     final content = _readContent(contentFile);
-    steps.add(ContentStep('读取 content.json', true, contentFile.path));
+    steps.add(ContentStep('读取 content.json', true, 'structure 已解析'));
     return ContentPackage(content: content, dir: dir, steps: steps, zipPath: zipPath, cached: false);
   }
 

@@ -333,7 +333,15 @@ class _PracticePageState extends State<PracticePage> {
     final scheme = Theme.of(context).colorScheme;
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.surface,
-      body: EtsBackground(
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [scheme.surface, scheme.surfaceContainerLow, scheme.surface],
+          ),
+        ),
+        child: EtsBackground(
         child: SafeArea(
           child: SingleChildScrollView(
             padding: const EdgeInsets.fromLTRB(30, 24, 30, 30),
@@ -361,6 +369,7 @@ class _PracticePageState extends State<PracticePage> {
               ],
             ),
           ),
+        ),
         ),
       ),
     );
