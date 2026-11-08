@@ -1,14 +1,15 @@
 // ignore_for_file: deprecated_member_use
 import 'dart:io';
 
-import 'package:flutter/material.dart';
-import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:liquid_glass_widgets/liquid_glass_widgets.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:provider/provider.dart';
 import 'package:window_manager/legacy.dart';
 
 import 'core/store.dart';
 import 'ui/pages/login_page.dart';
 import 'ui/pages/shell_page.dart';
+import 'ui/glass.dart';
 import 'ui/theme.dart';
 
 Future<void> main() async {
@@ -34,7 +35,16 @@ Future<void> main() async {
     } catch (_) {}
     FlutterError.presentError(details);
   };
-  runApp(const EtsApp());
+  try {
+    await LiquidGlassWidgets.initialize();
+  } catch (_) {
+    // 某些平台/驱动不支持 fragment shader 时，玻璃模式会退化为半透明表面。
+    EtsGlass.available = false;
+  }
+  runApp(LiquidGlassWidgets.wrap(
+    child: const EtsApp(),
+    brightnessResolver: Theme.maybeBrightnessOf,
+  ));
 }
 
 class EtsApp extends StatelessWidget {
@@ -45,19 +55,28 @@ class EtsApp extends StatelessWidget {
       create: (_) => AppStore()..initialize(),
       child: Consumer<AppStore>(
         builder: (context, store, _) {
+          EtsGlass.enabled.value = store.glassEnabled;
+          EtsGlass.strength.value = store.glassStrength;
           return MaterialApp(
             title: 'E听说 · Flutter',
             debugShowCheckedModeBanner: false,
             themeMode: store.themeMode,
-            theme: M3ETheme.build(brightness: Brightness.light, seed: store.seedColor, expressive: store.expressive),
-            darkTheme: M3ETheme.build(brightness: Brightness.dark, seed: store.seedColor, expressive: store.expressive),
-            localizationsDelegates: const [
-              GlobalMaterialLocalizations.delegate,
-              GlobalWidgetsLocalizations.delegate,
-              GlobalCupertinoLocalizations.delegate,
-            ],
+            theme: M3ETheme.build(
+              brightness: Brightness.light,
+              seed: store.seedColor,
+              variantName: store.schemeVariantName,
+              glass: store.glassEnabled,
+            ),
+            darkTheme: M3ETheme.build(
+              brightness: Brightness.dark,
+              seed: store.seedColor,
+              variantName: store.schemeVariantName,
+              glass: store.glassEnabled,
+            ),
+            localizationsDelegates: GlobalMaterialLocalizations.delegates,
             supportedLocales: const [Locale('zh', 'CN'), Locale('en', 'US')],
             locale: const Locale('zh', 'CN'),
+            builder: (context, child) => MaterialUiCompatibilityBridge(child: child ?? const SizedBox.shrink()),
             home: !store.initialized
                 ? const _SplashScreen()
                 : (store.isLoggedIn ? const ShellPage() : const LoginPage()),
@@ -83,10 +102,11 @@ class _SplashScreen extends StatelessWidget {
               height: 96,
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(32),
-                gradient: LinearGradient(colors: [scheme.primary, scheme.tertiary]),
+                color: scheme.primary,
               ),
-              child: const Center(
-                child: Text('E', style: TextStyle(color: Colors.white, fontSize: 52, fontWeight: FontWeight.w800)),
+              child: Center(
+                child: Text('E',
+                    style: TextStyle(color: scheme.onPrimary, fontSize: 52, fontWeight: FontWeight.w700)),
               ),
             ),
             const SizedBox(height: 24),

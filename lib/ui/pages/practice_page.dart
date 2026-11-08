@@ -3,7 +3,7 @@ import 'dart:typed_data';
 import 'dart:io';
 
 import 'package:audioplayers/audioplayers.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:provider/provider.dart';
 
@@ -333,18 +333,11 @@ class _PracticePageState extends State<PracticePage> {
     final scheme = Theme.of(context).colorScheme;
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.surface,
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [scheme.surface, scheme.surfaceContainerLow, scheme.surface],
-          ),
-        ),
-        child: EtsBackground(
+      body: EtsBackground(
         child: SafeArea(
           child: SingleChildScrollView(
-            padding: const EdgeInsets.fromLTRB(30, 24, 30, 30),
+            padding: EdgeInsets.fromLTRB(MediaQuery.sizeOf(context).width < 800 ? 16 : 30, 20,
+                MediaQuery.sizeOf(context).width < 800 ? 16 : 30, 30),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -354,14 +347,26 @@ class _PracticePageState extends State<PracticePage> {
                 if (_loading)
                   const LoadingPanel(label: '正在下载并解密 content 包…')
                 else if (_package != null)
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Expanded(flex: 3, child: _contentPanel(scheme)),
-                      const SizedBox(width: 18),
-                      SizedBox(width: 380, child: _evalPanel(scheme)),
-                    ],
-                  ),
+                  LayoutBuilder(builder: (context, c) {
+                    final narrow = c.maxWidth < 940;
+                    if (narrow) {
+                      return Column(
+                        children: [
+                          _evalPanel(scheme),
+                          const SizedBox(height: 16),
+                          _contentPanel(scheme),
+                        ],
+                      );
+                    }
+                    return Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Expanded(flex: 3, child: _contentPanel(scheme)),
+                        const SizedBox(width: 18),
+                        SizedBox(width: 390, child: _evalPanel(scheme)),
+                      ],
+                    );
+                  }),
                 if (_steps.isNotEmpty) ...[
                   const SizedBox(height: 16),
                   _stepsPanel(scheme),
@@ -369,7 +374,6 @@ class _PracticePageState extends State<PracticePage> {
               ],
             ),
           ),
-        ),
         ),
       ),
     );
@@ -611,7 +615,7 @@ class _PracticePageState extends State<PracticePage> {
                     .toList(),
               ),
             ],
-            if (!scores.isRejected) ...[
+            if (!scores.isRejected && (Platform.isWindows || Platform.isLinux || Platform.isMacOS)) ...[
               const SizedBox(height: 16),
               SizedBox(
                 width: double.infinity,

@@ -53,7 +53,12 @@ dependencies:
   ffi: ^2.2.0
   flutter_localizations:
     sdk: flutter
+  material_3_expressive: ^1.2.0
+  m3e_core: ^1.1.5
+  m3e_buttons: ^1.0.4
+  liquid_glass_widgets: ^1.17.0
 
+  material_ui: any
 dev_dependencies:
   flutter_test:
     sdk: flutter

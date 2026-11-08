@@ -30,12 +30,47 @@ class SpeexEncoder {
 
   static Future<SpeexEncoder> instance() async {
     if (_instance != null) return _instance!;
-    final lib = DynamicLibrary.open(await _dllPath());
+    final lib = await _openLibrary();
     _instance = SpeexEncoder._(lib);
     return _instance!;
   }
 
-  static Future<String> _dllPath() async {
+  /// 各平台加载顺序：
+  /// - Windows：随包 DLL（释放到临时目录）或 exe 同目录；
+  /// - Android / Linux：`libets_speex.so`（需自行编译并放入 jniLibs / 运行目录）；
+  /// - macOS：`libets_speex.dylib`；
+  /// - iOS：静态链接进主程序时用 process()。
+  static Future<DynamicLibrary> _openLibrary() async {
+    if (Platform.isWindows) {
+      return DynamicLibrary.open(await _windowsDllPath());
+    }
+    if (Platform.isAndroid || Platform.isLinux) {
+      try {
+        return DynamicLibrary.open('libets_speex.so');
+      } catch (e) {
+        throw UnsupportedError('当前平台未内置 speex 编码库（libets_speex.so）。'
+            '可参考 native/build.ps1 用 NDK / gcc 编译后放入对应目录；Windows 版已内置。');
+      }
+    }
+    if (Platform.isMacOS) {
+      try {
+        return DynamicLibrary.open('libets_speex.dylib');
+      } catch (e) {
+        throw UnsupportedError('当前平台未内置 speex 编码库（libets_speex.dylib）。'
+            '可在 macOS 下用 native/speex 源码编译；Windows 版已内置。');
+      }
+    }
+    if (Platform.isIOS) {
+      try {
+        return DynamicLibrary.process();
+      } catch (e) {
+        throw UnsupportedError('iOS 需要将 speex 静态链接进主程序；Windows 版已内置。');
+      }
+    }
+    throw UnsupportedError('当前平台不支持 speex 编码：${Platform.operatingSystem}');
+  }
+
+  static Future<String> _windowsDllPath() async {
     final exeDir = File(Platform.resolvedExecutable).parent;
     final beside = File('${exeDir.path}/ets_speex.dll');
     if (await beside.exists()) return beside.path;

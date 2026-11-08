@@ -1,5 +1,6 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:m3e_buttons/m3e_buttons.dart' as m3eb;
 import 'package:provider/provider.dart';
 
 import '../../core/store.dart';
@@ -100,17 +101,28 @@ class _LoginPageState extends State<LoginPage> {
       body: EtsBackground(
         child: Center(
           child: SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(horizontal: 48, vertical: 40),
+            padding: EdgeInsets.symmetric(horizontal: MediaQuery.sizeOf(context).width < 700 ? 20 : 48, vertical: 40),
             child: ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 1180),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  Expanded(flex: 5, child: _brandSide(scheme, store)),
-                  const SizedBox(width: 56),
-                  Expanded(flex: 4, child: _loginCard(scheme, store)),
-                ],
-              ),
+              child: LayoutBuilder(builder: (context, c) {
+                final narrow = c.maxWidth < 880;
+                final brand = _brandSide(scheme, store);
+                final card = _loginCard(scheme, store);
+                if (narrow) {
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [brand, const SizedBox(height: 30), card],
+                  );
+                }
+                return Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Expanded(flex: 5, child: brand),
+                    const SizedBox(width: 56),
+                    Expanded(flex: 4, child: card),
+                  ],
+                );
+              }),
             ),
           ),
         ),
@@ -130,10 +142,11 @@ class _LoginPageState extends State<LoginPage> {
               height: 58,
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(20),
-                gradient: LinearGradient(colors: [scheme.primary, scheme.tertiary]),
+                color: scheme.primary,
               ),
-              child: const Center(
-                child: Text('E', style: TextStyle(color: Colors.white, fontSize: 30, fontWeight: FontWeight.w800)),
+              child: Center(
+                child: Text('E',
+                    style: TextStyle(color: scheme.onPrimary, fontSize: 30, fontWeight: FontWeight.w700)),
               ),
             ),
             const SizedBox(width: 16),
@@ -153,8 +166,8 @@ class _LoginPageState extends State<LoginPage> {
             .fadeIn(delay: 120.ms, duration: 600.ms)
             .slideY(begin: 0.12, curve: Curves.easeOutCubic),
         const SizedBox(height: 22),
-        SizedBox(
-          width: 470,
+        ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 470),
           child: Text(
             'Material 3 Expressive 打造的听说练习客户端：真实登录、作业与套卷、题库朗读、'
             '麦克风录音、speex 编码、即时评测与成绩回传。',
@@ -320,10 +333,10 @@ class _LoginPageState extends State<LoginPage> {
             ),
             const SizedBox(height: 10),
             Center(
-              child: TextButton(
+              child: m3eb.M3ETextButton(
                 onPressed: _busy ? null : _tokenLogin,
                 child: Text('已有 token？直接粘贴登录',
-                    style: TextStyle(color: scheme.onPrimaryContainer.withValues(alpha: 0.85), fontWeight: FontWeight.w700)),
+                    style: TextStyle(color: scheme.onPrimaryContainer, fontWeight: FontWeight.w700)),
               ),
             ),
             if (store.lastError != null) ...[

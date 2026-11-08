@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:provider/provider.dart';
 
@@ -109,90 +109,105 @@ class _HomePageState extends State<HomePage> {
           if (_error != null) ...[ErrorPanel(message: _error!, onRetry: _load), const SizedBox(height: 18)],
           HeroCard(
             colors: [scheme.primary, scheme.tertiary],
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+            child: LayoutBuilder(builder: (context, c) {
+              final compact = c.maxWidth < 700;
+              final copy = Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: scheme.onPrimaryContainer.withValues(alpha: 0.10),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Text('${store.gradeName} · 学习中心',
+                        style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w800, letterSpacing: 0.5)),
+                  ),
+                  const SizedBox(height: 18),
+                  Text('保持节奏，\n今天完成一份作业。',
+                      style: Theme.of(context).textTheme.displaySmall?.copyWith(
+                            color: scheme.onPrimaryContainer,
+                            fontSize: compact ? 30 : null,
+                          )),
+                  const SizedBox(height: 22),
+                  Wrap(
+                    spacing: 12,
+                    runSpacing: 10,
                     children: [
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                        decoration: BoxDecoration(
-                          color: Colors.white.withValues(alpha: 0.18),
-                          borderRadius: BorderRadius.circular(12),
+                      FilledButton.icon(
+                        onPressed: () {
+                          final todo = _homeworks.where((h) => _state(h) == 'todo').toList();
+                          if (todo.isEmpty) {
+                            Navigator.of(context).push(MaterialPageRoute(builder: (_) => const HomeworkPage()));
+                          } else {
+                            Navigator.of(context)
+                                .push(MaterialPageRoute(builder: (_) => HomeworkPage(initialHomework: todo.first)));
+                          }
+                        },
+                        icon: const Icon(Icons.arrow_forward_rounded, size: 18),
+                        label: Text(_todoCount > 0 ? '继续练习' : '查看作业'),
+                        style: FilledButton.styleFrom(
+                          backgroundColor: scheme.primary,
+                          foregroundColor: scheme.onPrimary,
                         ),
-                        child: Text('${store.gradeName} · 学习中心',
-                            style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w800, letterSpacing: 0.5)),
                       ),
-                      const SizedBox(height: 18),
-                      Text('保持节奏，\n今天完成一份作业。', style: Theme.of(context).textTheme.displaySmall?.copyWith(color: scheme.onPrimary)),
-                      const SizedBox(height: 22),
-                      Row(
-                        children: [
-                          FilledButton.icon(
-                            onPressed: () {
-                              final todo = _homeworks.where((h) => _state(h) == 'todo').toList();
-                              if (todo.isEmpty) {
-                                Navigator.of(context)
-                                    .push(MaterialPageRoute(builder: (_) => const HomeworkPage()));
-                              } else {
-                                Navigator.of(context)
-                                    .push(MaterialPageRoute(builder: (_) => HomeworkPage(initialHomework: todo.first)));
-                              }
-                            },
-                            icon: const Icon(Icons.arrow_forward_rounded, size: 18),
-                            label: Text(_todoCount > 0 ? '继续练习' : '查看作业'),
-                            style: FilledButton.styleFrom(
-                              backgroundColor: scheme.onPrimary,
-                              foregroundColor: scheme.primary,
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          OutlinedButton(
-                            onPressed: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const SetsPage())),
-                            style: OutlinedButton.styleFrom(
-                              foregroundColor: scheme.onPrimary,
-                              side: BorderSide(color: scheme.onPrimary.withValues(alpha: 0.5)),
-                            ),
-                            child: const Text('套卷练习'),
-                          ),
-                        ],
+                      OutlinedButton(
+                        onPressed: () =>
+                            Navigator.of(context).push(MaterialPageRoute(builder: (_) => const SetsPage())),
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: scheme.onPrimaryContainer,
+                          side: BorderSide(color: scheme.outline),
+                        ),
+                        child: const Text('套卷练习'),
                       ),
                     ],
                   ),
-                ),
-                const SizedBox(width: 30),
-                SizedBox(
-                  width: 270,
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      _heroStat('待完成', '$_todoCount'),
-                      _heroStat('已完成', '$_doneCount'),
-                      _heroStat('待订正', '$_mistakeCount'),
-                    ],
-                  ),
-                ),
-              ],
-            ),
+                ],
+              );
+              final stats = Row(
+                mainAxisAlignment: compact ? MainAxisAlignment.spaceBetween : MainAxisAlignment.spaceBetween,
+                children: [
+                  _heroStat('待完成', '$_todoCount'),
+                  _heroStat('已完成', '$_doneCount'),
+                  _heroStat('待订正', '$_mistakeCount'),
+                ],
+              );
+              if (compact) {
+                return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                  copy,
+                  const SizedBox(height: 24),
+                  stats,
+                ]);
+              }
+              return Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Expanded(child: copy),
+                  const SizedBox(width: 30),
+                  SizedBox(width: 270, child: stats),
+                ],
+              );
+            }),
           ).animate().fadeIn(duration: 450.ms).slideY(begin: 0.04, curve: Curves.easeOutCubic),
           const SizedBox(height: 24),
-          Row(
-            children: [
-              Expanded(child: _quickAction(scheme, Icons.assignment_rounded, '我的作业', '$_todoCount 份待完成',
-                  () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const HomeworkPage())))),
-              const SizedBox(width: 14),
-              Expanded(child: _quickAction(scheme, Icons.layers_rounded, '套卷练习', '听说 · 读写 · 听力',
-                  () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const SetsPage())))),
-              const SizedBox(width: 14),
-              Expanded(child: _quickAction(scheme, Icons.menu_book_rounded, '同步课程', '教材单元同步',
-                  () => _showTip('同步课程', '在左侧「同步课程」中按教材浏览单元。'))),
-              const SizedBox(width: 14),
-              Expanded(child: _quickAction(scheme, Icons.auto_stories_rounded, '错题本', '$_mistakeCount 道待订正',
-                  () => _showTip('错题本', '在左侧「错题本」中查看与订正。'))),
-            ],
-          ),
+          LayoutBuilder(builder: (context, c) {
+            final twoCol = c.maxWidth < 780;
+            final w = twoCol ? (c.maxWidth - 14) / 2 : (c.maxWidth - 42) / 4;
+            final actions = [
+              _quickAction(scheme, Icons.assignment_rounded, '我的作业', '$_todoCount 份待完成', scheme.primaryContainer, scheme.onPrimaryContainer,
+                  () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const HomeworkPage()))),
+              _quickAction(scheme, Icons.layers_rounded, '套卷练习', '听说 · 读写 · 听力', scheme.tertiaryContainer, scheme.onTertiaryContainer,
+                  () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const SetsPage()))),
+              _quickAction(scheme, Icons.menu_book_rounded, '同步课程', '教材单元同步', scheme.secondaryContainer, scheme.onSecondaryContainer,
+                  () => _showTip('同步课程', '在左侧「同步课程」中按教材浏览单元。')),
+              _quickAction(scheme, Icons.auto_stories_rounded, '错题本', '$_mistakeCount 道待订正', scheme.errorContainer, scheme.onErrorContainer, () => _showTip('错题本', '在左侧「错题本」中查看与订正。')),
+            ];
+            return Wrap(
+              spacing: 14,
+              runSpacing: 14,
+              children: actions.map((a) => SizedBox(width: w, child: a)).toList(),
+            );
+          }),
           const SizedBox(height: 28),
           SectionTitle(
             title: '最近作业',
@@ -215,7 +230,7 @@ class _HomePageState extends State<HomePage> {
           if (_announcements.isNotEmpty) ...[
             const SizedBox(height: 22),
             Panel(
-              color: scheme.tertiaryContainer.withValues(alpha: 0.55),
+              color: scheme.tertiaryContainer,
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -247,34 +262,41 @@ class _HomePageState extends State<HomePage> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(value, style: Theme.of(context).textTheme.displaySmall?.copyWith(fontWeight: FontWeight.w800)),
+        Text(value, style: Theme.of(context).textTheme.displaySmall?.copyWith(fontWeight: FontWeight.w700, color: Theme.of(context).colorScheme.onPrimaryContainer)),
         const SizedBox(height: 4),
-        Text(label, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Colors.white70)),
+        Text(label, style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: Theme.of(context).colorScheme.onPrimaryContainer.withValues(alpha: 0.75))),
       ],
     );
   }
 
-  Widget _quickAction(ColorScheme scheme, IconData icon, String title, String subtitle, VoidCallback onTap) {
+  Widget _quickAction(ColorScheme scheme, IconData icon, String title, String subtitle, Color container, Color foreground, VoidCallback onTap) {
     return Panel(
       padding: const EdgeInsets.all(18),
-      child: InkWell(
+      color: container,
+      child: DefaultTextStyle.merge(
+        style: TextStyle(color: foreground),
+        child: InkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(24),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Container(
-              width: 44,
-              height: 44,
-              decoration: BoxDecoration(color: scheme.primary.withValues(alpha: 0.12), borderRadius: BorderRadius.circular(16)),
-              child: Icon(icon, color: scheme.primary, size: 22),
+              width: 46,
+              height: 46,
+              decoration: BoxDecoration(
+                color: foreground.withValues(alpha: 0.10),
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: Icon(icon, color: foreground, size: 23),
             ),
             const SizedBox(height: 16),
             Text(title, style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 14.5)),
             const SizedBox(height: 3),
-            Text(subtitle, style: TextStyle(fontSize: 11.5, color: scheme.onSurfaceVariant)),
+            Text(subtitle, style: TextStyle(fontSize: 11.5, color: foreground.withValues(alpha: 0.75))),
           ],
         ),
+      ),
       ),
     );
   }

@@ -60,3 +60,11 @@ assets/native/*.exp
 # Local-only
 secrets/
 *.local.*
+# Generated platform files containing local absolute paths
+ios/Flutter/flutter_export_environment.sh
+ios/Flutter/Generated.xcconfig
+ios/Flutter/ephemeral/
+macos/Flutter/ephemeral/
+linux/flutter/ephemeral/
+android/local.properties
+windows/flutter/ephemeral/

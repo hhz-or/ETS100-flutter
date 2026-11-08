@@ -1,85 +1,34 @@
 import 'dart:math' as math;
 
-import 'package:flutter/material.dart';
+import 'package:material_3_expressive/material_3_expressive.dart';
+import 'package:material_ui/material_ui.dart';
+
 
 class EtsBackground extends StatelessWidget {
   const EtsBackground({super.key, required this.child});
   final Widget child;
   @override
-  Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-    return Stack(
-      children: [
-        Positioned(
-          top: -180,
-          right: -120,
-          child: _Blob(color: scheme.primary.withValues(alpha: 0.16), size: 460),
-        ),
-        Positioned(
-          bottom: -200,
-          left: -140,
-          child: _Blob(color: scheme.tertiary.withValues(alpha: 0.14), size: 420),
-        ),
-        Positioned(
-          top: 260,
-          left: 220,
-          child: _Blob(color: scheme.secondary.withValues(alpha: 0.08), size: 320),
-        ),
-        child,
-      ],
-    );
-  }
+  Widget build(BuildContext context) => ColoredBox(color: Theme.of(context).colorScheme.surface, child: child);
 }
 
-class _Blob extends StatelessWidget {
-  const _Blob({required this.color, required this.size});
-  final Color color;
-  final double size;
-  @override
-  Widget build(BuildContext context) {
-    return IgnorePointer(
-      child: Container(
-        width: size,
-        height: size,
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          gradient: RadialGradient(colors: [color, color.withValues(alpha: 0)]),
-        ),
-      ),
-    );
-  }
-}
-
-/// M3E 大圆角、渐变 hero 卡片。
+/// 标准 M3 “主色容器” Hero 卡：无渐变、无夸张阴影。
 class HeroCard extends StatelessWidget {
-  const HeroCard({super.key, required this.child, this.colors, this.padding = const EdgeInsets.all(30)});
+  const HeroCard({super.key, required this.child, this.colors, this.padding = const EdgeInsets.all(28)});
   final Widget child;
   final List<Color>? colors;
   final EdgeInsets padding;
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
-    final palette = colors ?? [scheme.primary, scheme.tertiary];
     return Container(
       padding: padding,
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(36),
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: palette,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: palette.first.withValues(alpha: 0.28),
-            blurRadius: 42,
-            offset: const Offset(0, 20),
-          ),
-        ],
+        color: scheme.primaryContainer,
+        borderRadius: BorderRadius.circular(28),
       ),
       child: DefaultTextStyle.merge(
-        style: TextStyle(color: scheme.onPrimary),
-        child: IconTheme.merge(data: IconThemeData(color: scheme.onPrimary), child: child),
+        style: TextStyle(color: scheme.onPrimaryContainer),
+        child: IconTheme.merge(data: IconThemeData(color: scheme.onPrimaryContainer), child: child),
       ),
     );
   }
@@ -97,8 +46,8 @@ class Panel extends StatelessWidget {
       padding: padding,
       decoration: BoxDecoration(
         color: color ?? scheme.surfaceContainerLow,
-        borderRadius: BorderRadius.circular(30),
-        border: Border.all(color: scheme.outlineVariant.withValues(alpha: 0.35)),
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: scheme.outlineVariant.withValues(alpha: 0.5)),
       ),
       child: child,
     );
@@ -144,20 +93,25 @@ class StatTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     final c = color ?? scheme.primary;
-    return Panel(
-      padding: const EdgeInsets.all(20),
+    return M3ECard(
+      variant: M3ECardVariant.filled,
+      padding: const EdgeInsets.all(22),
+      borderRadius: BorderRadius.circular(30),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
-            width: 44,
-            height: 44,
-            decoration: BoxDecoration(color: c.withValues(alpha: 0.14), borderRadius: BorderRadius.circular(16)),
-            child: Icon(icon, color: c, size: 22),
+            width: 46,
+            height: 46,
+            decoration: BoxDecoration(
+              color: c.withValues(alpha: 0.14),
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: Icon(icon, color: c, size: 23),
           ),
-          const SizedBox(height: 18),
+          const SizedBox(height: 20),
           Text(value, style: Theme.of(context).textTheme.headlineMedium),
-          const SizedBox(height: 2),
+          const SizedBox(height: 4),
           Text(label, style: Theme.of(context).textTheme.bodySmall?.copyWith(color: scheme.onSurfaceVariant)),
         ],
       ),
@@ -323,11 +277,59 @@ class LoadingPanel extends StatelessWidget {
     return Panel(
       child: Row(
         children: [
-          const SizedBox(width: 22, height: 22, child: CircularProgressIndicator(strokeWidth: 2.6)),
-          const SizedBox(width: 16),
-          Text(label, style: const TextStyle(fontWeight: FontWeight.w600)),
+          const SizedBox(width: 30, height: 30, child: M3ELoadingIndicator(size: 34)),
+          const SizedBox(width: 14),
+          Text(label, style: const TextStyle(fontWeight: FontWeight.w700)),
         ],
       ),
+    );
+  }
+}
+
+
+/// 品牌标记（桌面侧栏 / 移动顶栏共用）。
+class BrandMark extends StatelessWidget {
+  const BrandMark({super.key, this.size = 44, this.showSubtitle = true});
+  final double size;
+  final bool showSubtitle;
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Container(
+          width: size,
+          height: size,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(size * 0.34),
+            color: scheme.primary,
+          ),
+          child: Center(
+            child: Text('E',
+                style: TextStyle(
+                    color: scheme.onPrimary,
+                    fontSize: size * 0.5,
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: -1)),
+          ),
+        ),
+        if (showSubtitle) ...[
+          const SizedBox(width: 12),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('E听说', style: Theme.of(context).textTheme.titleLarge),
+              Text('M3E · FLUTTER',
+                  style: TextStyle(
+                      fontSize: 9,
+                      letterSpacing: 1.8,
+                      fontWeight: FontWeight.w900,
+                      color: scheme.onSurfaceVariant)),
+            ],
+          ),
+        ],
+      ],
     );
   }
 }

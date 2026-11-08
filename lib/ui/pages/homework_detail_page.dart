@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:provider/provider.dart';
 
 import '../../core/store.dart';
@@ -273,7 +273,8 @@ class _HomeworkDetailPageState extends State<HomeworkDetailPage> {
   Widget _pill(String text) => Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
         decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha: 0.18), borderRadius: BorderRadius.circular(12)),
+            color: Theme.of(context).colorScheme.onPrimaryContainer.withValues(alpha: 0.10),
+            borderRadius: BorderRadius.circular(12)),
         child: Text(text, style: const TextStyle(fontSize: 11.5, fontWeight: FontWeight.w800)),
       );
 

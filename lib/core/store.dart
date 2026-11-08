@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'api.dart';
@@ -25,8 +25,15 @@ class AppStore extends ChangeNotifier {
   List<dynamic> announcements = const [];
 
   ThemeMode themeMode = ThemeMode.light;
-  Color seedColor = const Color(0xFF5852D6);
+  Color seedColor = const Color(0xFF4CAF50);
+  String paletteName = '默认绿';
+  String schemeVariantName = 'tonalSpot';
   bool expressive = true;
+
+
+  /// 全局 liquid-glass 开关（持久化；关闭时使用实色 M3E 表面）。
+  bool glassEnabled = false;
+  double glassStrength = 0.6;
 
   String ffmpegPath = 'ffmpeg';
   String deviceName = 'PC';
@@ -38,6 +45,11 @@ class AppStore extends ChangeNotifier {
   static const _kProfile = 'ets_profile';
   static const _kThemeMode = 'ets_theme_mode';
   static const _kSeed = 'ets_seed_color';
+  static const _kGlass = 'ets_glass_enabled';
+  static const _kColorPreset = 'ets_color_preset';
+  static const _kPaletteSeed = 'ets_palette_seed';
+  static const _kSchemeVariant = 'ets_scheme_variant';
+  static const _kGlassStrength = 'ets_glass_strength';
   static const _kExpressive = 'ets_expressive';
   static const _kFfmpeg = 'ets_ffmpeg';
   static const _kDeviceName = 'ets_device_name';
@@ -73,9 +85,15 @@ class AppStore extends ChangeNotifier {
       'system' => ThemeMode.system,
       _ => ThemeMode.light,
     };
-    final seed = p.getInt(_kSeed);
-    if (seed != null) seedColor = Color(seed);
     expressive = p.getBool(_kExpressive) ?? true;
+    // 新配色方案：单 seed + 动态方案变体（Material You 基础颜色）。
+    final preset = p.getString(_kColorPreset);
+    final presetSeed = p.getInt(_kPaletteSeed);
+    if (preset != null) paletteName = preset;
+    if (presetSeed != null) seedColor = Color(presetSeed);
+    schemeVariantName = p.getString(_kSchemeVariant) ?? 'tonalSpot';
+
+    glassEnabled = (Platform.environment['ETS_GLASS'] == '1') || (p.getBool(_kGlass) ?? false);
     ffmpegPath = p.getString(_kFfmpeg) ?? 'ffmpeg';
     deviceName = p.getString(_kDeviceName) ?? 'PC';
     deviceCode = p.getString(_kDeviceCode) ?? '0000000000000000';
@@ -86,7 +104,13 @@ class AppStore extends ChangeNotifier {
 
     // 开发/自动化：ETS_TOKEN 环境变量可直接注入已有 token（不写入仓库）
     final envToken = Platform.environment['ETS_TOKEN'];
-    final token = (envToken != null && envToken.isNotEmpty) ? envToken : p.getString(_kToken);
+    final clearAuth = Platform.environment['ETS_CLEAR_AUTH'] == '1';
+    if (clearAuth) {
+      await p.remove(_kToken);
+      await p.remove(_kProfile);
+      await p.remove(_kEcard);
+    }
+    final token = clearAuth ? null : ((envToken != null && envToken.isNotEmpty) ? envToken : p.getString(_kToken));
     if (envToken != null && envToken.isNotEmpty) {
       api.token = envToken;
     }
@@ -210,6 +234,38 @@ class AppStore extends ChangeNotifier {
       expressive = expressiveMode;
       await _prefs?.setBool(_kExpressive, expressiveMode);
     }
+    notifyListeners();
+  }
+
+  Future<void> setPalettePreset({
+    required String name,
+    required Color seed,
+    String variant = 'tonalSpot',
+  }) async {
+    paletteName = name;
+    seedColor = seed;
+    schemeVariantName = variant;
+    await _prefs?.setString(_kColorPreset, name);
+    await _prefs?.setInt(_kPaletteSeed, seed.toARGB32());
+    await _prefs?.setString(_kSchemeVariant, variant);
+    notifyListeners();
+  }
+
+  Future<void> setSchemeVariant(String variant) async {
+    schemeVariantName = variant;
+    await _prefs?.setString(_kSchemeVariant, variant);
+    notifyListeners();
+  }
+
+  Future<void> setGlass(bool enabled) async {
+    glassEnabled = enabled;
+    await _prefs?.setBool(_kGlass, enabled);
+    notifyListeners();
+  }
+
+  Future<void> setGlassStrength(double value) async {
+    glassStrength = value.clamp(0.0, 1.0);
+    await _prefs?.setDouble(_kGlassStrength, glassStrength);
     notifyListeners();
   }
 

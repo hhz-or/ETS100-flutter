@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:provider/provider.dart';
 
 import '../../core/store.dart';
@@ -23,26 +23,27 @@ class AboutPage extends StatelessWidget {
                 width: 92,
                 height: 92,
                 decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.2),
+                  color: scheme.onPrimaryContainer.withValues(alpha: 0.10),
                   borderRadius: BorderRadius.circular(30),
                 ),
-                child: const Center(
-                  child: Text('E', style: TextStyle(fontSize: 52, color: Colors.white, fontWeight: FontWeight.w800)),
+                child: Center(
+                  child: Text('E',
+                      style: TextStyle(fontSize: 52, color: scheme.onPrimaryContainer, fontWeight: FontWeight.w700)),
                 ),
               ),
               const SizedBox(width: 24),
               Expanded(
                 child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                  Text('E听说 · Flutter', style: Theme.of(context).textTheme.headlineMedium?.copyWith(color: scheme.onPrimary)),
+                  Text('E听说 · Flutter', style: Theme.of(context).textTheme.headlineMedium?.copyWith(color: scheme.onPrimaryContainer)),
                   const SizedBox(height: 6),
                   Text('Material 3 Expressive · Flutter ${_flutterVersion()} · Windows',
-                      style: TextStyle(color: scheme.onPrimary.withValues(alpha: 0.85), fontSize: 12)),
+                      style: TextStyle(color: scheme.onPrimaryContainer.withValues(alpha: 0.8), fontSize: 12)),
                   const SizedBox(height: 14),
                   Wrap(spacing: 8, runSpacing: 8, children: [
-                    _pill('真实账号登录'),
-                    _pill('录音 + ISE 评测'),
-                    _pill('speex 16k 编码'),
-                    _pill('OSS 上传 / sync 回传'),
+                    _pill(context, '真实账号登录'),
+                    _pill(context, '录音 + ISE 评测'),
+                    _pill(context, 'speex 16k 编码'),
+                    _pill(context, 'OSS 上传 / sync 回传'),
                   ]),
                 ]),
               ),
@@ -112,11 +113,16 @@ class AboutPage extends StatelessWidget {
     return '3.47';
   }
 
-  Widget _pill(String text) => Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-        decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.18), borderRadius: BorderRadius.circular(12)),
-        child: Text(text, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w800)),
-      );
+  Widget _pill(BuildContext context, String text) {
+    final scheme = Theme.of(context).colorScheme;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      decoration: BoxDecoration(
+          color: scheme.onPrimaryContainer.withValues(alpha: 0.10),
+          borderRadius: BorderRadius.circular(12)),
+      child: Text(text, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w700)),
+    );
+  }
 
   Widget _row(BuildContext context, IconData icon, String title, String subtitle) {
     final scheme = Theme.of(context).colorScheme;
